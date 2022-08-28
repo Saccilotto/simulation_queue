@@ -20,6 +20,9 @@ public class Interface {
             filaTam = input.nextInt();
             System.out.println("Gostaria de simular outra fila(Digite 1 para sim ou qualquer outra tecla para fechar): ");
             repeat = input.nextInt();
+
+            Simulation sim = new Simulation(lambda, atendimento, servidores, filaTam);
+
             if(repeat == 1) {
                 quit = true;
             } else {
