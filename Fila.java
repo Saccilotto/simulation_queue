@@ -1,2 +1,1 @@
-package PACKAGE_NAME;public interface Fila {
-}
+public interface Fila {}
