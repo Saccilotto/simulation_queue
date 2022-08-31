@@ -54,11 +54,22 @@ public class Simulation {
 
     public void chegada(BigDecimal tempo) {
         globalTime = globalTime.add(tempo);
+        // contabilizar o tempo no array de tempos da fila
+        // delta = tempodoevento - tempoglobal
+        // tempofila[fila.clientes()] = tempofila[fila.clientes()] + delta
+        // globalTime = tempodoevento
         if (!fila.isFull()) {
             fila.add();
-            saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
-            registraEvento(new Evento(CHEGADA, globalTime));
+            if (usuario que estao na fila forem menor ou igual ao numero de servidores da fila) {
+                saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
+            }
+            //registraEvento(new Evento(CHEGADA, globalTime));
         }
+        else {
+            //perda++
+        }
+        //agenda chegada
+
     }
 
     private void registraEvento(Evento evento) {
@@ -67,10 +78,16 @@ public class Simulation {
 
     public void saida(BigDecimal tempo) {
         globalTime = globalTime.add(tempo);
-        if (!fila.isEmpty()) {
+   // contabilizar o tempo no array de tempos da fila
+        // delta = tempodoevento - tempoglobal
+        // tempofila[fila.clientes()] = tempofila[fila.clientes()] + delta
+        // globalTime = tempodoevento        //if (!fila.isEmpty()) {
             fila.remove();
-            registraEvento(new Evento(SAIDA, globalTime));
-        }
+            if (usuario que estao na fila forem maior ou igual ao numero de servidores da fila) {
+                saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
+            }
+            //registraEvento(new Evento(SAIDA, globalTime));
+        //}
     }
 
 
