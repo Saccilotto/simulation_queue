@@ -1,7 +1,6 @@
 import domain.Intervalo;
 
-import java.math.BigInteger;
-import java.util.LinkedList;
+import java.math.BigDecimal;
 
 public class FilaSimples implements Fila {
 
@@ -12,8 +11,9 @@ public class FilaSimples implements Fila {
 
     private int capacidade;
 
-    private int capacidadeAtual;
-
+    private int numeroClientes;
+    private int perda = 0;
+    private BigDecimal[] estados;
 
     public FilaSimples(Intervalo chegada, Intervalo saida, int servidores, int capacidade) {
         this.chegada = chegada;
@@ -39,18 +39,43 @@ public class FilaSimples implements Fila {
     }
 
     public boolean isFull() {
-        return capacidadeAtual == capacidade;
+        return numeroClientes == capacidade;
     }
 
     public void add() {
-        capacidadeAtual++;
+        numeroClientes++;
     }
 
     public boolean isEmpty() {
-        return capacidadeAtual == 0;
+        return numeroClientes == 0;
     }
 
     public void remove() {
-        capacidadeAtual--;
+        numeroClientes--;
+    }
+
+    public int getPerda() {
+        return perda;
+    }
+
+    @Override
+    public void addPerda() {
+        this.perda++;
+    }
+
+    public BigDecimal getTempoNoEstadoAtual() {
+        return estados[this.numeroClientes];
+    }
+
+    public void setTempoNoEstadoAtual(final BigDecimal tempo) {
+        estados[this.numeroClientes] = tempo;
+    }
+
+    public boolean podeRemover() {
+        return this.numeroClientes >= servidores;
+    }
+
+    public int getNumeroClientes() {
+        return this.numeroClientes;
     }
 }

@@ -1,3 +1,4 @@
+import domain.Escalonador;
 import domain.Evento;
 import domain.Intervalo;
 
@@ -18,6 +19,8 @@ public class Simulation {
     private Intervalo lambda;
     private Intervalo atendimento;
     private int filaTam;
+
+    private Escalonador escalonador;
 
     public Simulation(Intervalo lambda, Intervalo atendimento, int numServidores, int filaTam) {
         this.lambda = lambda;
@@ -52,51 +55,53 @@ public class Simulation {
         return BigDecimal.valueOf(n);
     }
 
-    public void chegada(BigDecimal tempo) {
-        globalTime = globalTime.add(tempo);
-        // contabilizar o tempo no array de tempos da fila
-        // delta = tempodoevento - tempoglobal
-        // tempofila[fila.clientes()] = tempofila[fila.clientes()] + delta
-        // globalTime = tempodoevento
+    public void chegada(BigDecimal tempoEvento) {
+        final BigDecimal delta = tempoEvento.subtract(globalTime);
+        fila.setTempoNoEstadoAtual(fila.getTempoNoEstadoAtual().add(delta));
+        globalTime = tempoEvento;
         if (!fila.isFull()) {
             fila.add();
-            if (usuario que estao na fila forem menor ou igual ao numero de servidores da fila) {
-                saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
+            if (fila.getNumeroClientes() <= fila.getServidores()) {
+                //saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
+                escalonador.addEvento(new Evento(SAIDA, tempoEvento));
             }
-            //registraEvento(new Evento(CHEGADA, globalTime));
         }
         else {
-            //perda++
+            fila.addPerda();
         }
-        //agenda chegada
-
+        escalonador.addEvento(new Evento(CHEGADA, tempoEvento));
     }
 
     private void registraEvento(Evento evento) {
         System.out.println("Evento de " + evento.getTipoEvento() + " no tempo " + evento.getTempo());
     }
 
-    public void saida(BigDecimal tempo) {
-        globalTime = globalTime.add(tempo);
-   // contabilizar o tempo no array de tempos da fila
-        // delta = tempodoevento - tempoglobal
-        // tempofila[fila.clientes()] = tempofila[fila.clientes()] + delta
-        // globalTime = tempodoevento        //if (!fila.isEmpty()) {
+    public void saida(BigDecimal tempoEvento) {
+        final BigDecimal delta = tempoEvento.subtract(globalTime);
+        fila.setTempoNoEstadoAtual(fila.getTempoNoEstadoAtual().add(delta));
+        globalTime = tempoEvento;
             fila.remove();
-            if (usuario que estao na fila forem maior ou igual ao numero de servidores da fila) {
-                saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
+            if (fila.podeRemover()) {
+                // saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
+                escalonador.addEvento(new Evento(SAIDA, tempoEvento));
             }
-            //registraEvento(new Evento(SAIDA, globalTime));
-        //}
     }
 
 
     public void simulate() {
-        Intervalo aux = new Intervalo(1,5);
-        chegada(BigDecimal.valueOf(3));
-        while (count < MAX_NUMBERS) {
-            chegada(generateRandom(lambda.getInicio(), lambda.getFim()));
+        escalonador.addEvento(new Evento(CHEGADA, BigDecimal.valueOf(3)));
+
+        int i = 0;
+        while (i < escalonador.getNumeroEventos()) {
+
+            final Evento evento = escalonador.getEvento(i);
+
+            if (evento.getTipoEvento().equals(CHEGADA)) {
+                chegada(globalTime.add(generateRandom(minimo, maximo)));
+                return;
+            }
+            saida(globalTime.add(generateRandom(minimo, maximo)));
         }
     }
-    
+
 }
