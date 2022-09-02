@@ -18,4 +18,12 @@ public class Evento {
     public BigDecimal getTempo() {
         return tempo;
     }
+
+    @Override
+    public String toString() {
+        return "Evento - |" +
+                " " + tipoEvento +
+                ", tempo = " + tempo +
+                " |";
+    }
 }

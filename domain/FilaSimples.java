@@ -1,39 +1,45 @@
 package domain;
 
-import domain.Intervalo;
+import domain.random.Generator;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+
+import static domain.TipoEvento.CHEGADA;
+import static domain.TipoEvento.SAIDA;
 
 public class FilaSimples implements Fila {
 
-    private Intervalo chegada;
-    private Intervalo saida;
+    private Intervalo taxaChegada;
+    private Intervalo taxaSaida;
 
     private int servidores;
 
     private int capacidade;
 
-    private int numeroClientes;
-    private int perda = 0;
-    private final BigDecimal[] estados;
+    private final Generator generator;
 
-    public FilaSimples(Intervalo chegada, Intervalo saida, int servidores, int capacidade) {
-        this.chegada = chegada;
-        this.saida = saida;
+    private int numeroClientes;
+    private int perda;
+    private final List<BigDecimal> estados;
+
+    public FilaSimples(Intervalo taxaChegada, Intervalo taxaSaida, int servidores, int capacidade, Generator generator) {
+        this.taxaChegada = taxaChegada;
+        this.taxaSaida = taxaSaida;
         this.servidores = servidores;
         this.capacidade = capacidade;
-        this.estados = new BigDecimal[capacidade+1];
-        for (int i = 0; i < capacidade+1; i++) {
-            estados[i] = BigDecimal.ZERO;
-        }
+        this.estados = new ArrayList();
+        this.generator = generator;
     }
 
-    public Intervalo getChegada() {
-        return chegada;
+    public Intervalo getTaxaChegada() {
+        return taxaChegada;
     }
 
-    public Intervalo getSaida() {
-        return saida;
+    public Intervalo getTaxaSaida() {
+        return taxaSaida;
     }
 
     public int getServidores() {
@@ -45,6 +51,9 @@ public class FilaSimples implements Fila {
     }
 
     public boolean isFull() {
+        if (capacidade == -1) {
+            return false;
+        }
         return numeroClientes == capacidade;
     }
 
@@ -60,21 +69,47 @@ public class FilaSimples implements Fila {
         numeroClientes--;
     }
 
-    public int getPerda() {
-        return perda;
+    public String getPerda() {
+        return "Perda: " + perda;
     }
 
-    @Override
     public void addPerda() {
         this.perda++;
     }
 
+    public void handleChegada(BigDecimal tempoEvento, BigDecimal globalTime, Escalonador escalonador) {
+        final BigDecimal delta = tempoEvento.subtract(globalTime);
+        this.setTempoNoEstadoAtual(this.getTempoNoEstadoAtual().add(delta));
+        if (!this.isFull()) {
+            this.add();
+            if (this.getNumeroClientes() <= this.getServidores()) {
+                escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generator.generateRandom(taxaSaida.getInicio(), taxaSaida.getFim()))));
+            }
+        } else {
+            this.addPerda();
+        }
+        escalonador.addEvento(new Evento(CHEGADA, tempoEvento.add(generator.generateRandom(taxaChegada.getInicio(), taxaChegada.getFim()))));
+    }
+
+    public void handleSaida(BigDecimal tempoEvento, BigDecimal globalTime, Escalonador escalonador) {
+        final BigDecimal delta = tempoEvento.subtract(globalTime);
+        this.setTempoNoEstadoAtual(this.getTempoNoEstadoAtual().add(delta));
+        this.remove();
+        if (this.podeRemover()) {
+            escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generator.generateRandom(taxaSaida.getInicio(), taxaSaida.getFim()))));
+        }
+    }
+
     public BigDecimal getTempoNoEstadoAtual() {
-        return estados[this.numeroClientes];
+        return estados.size() > numeroClientes ? estados.get(numeroClientes) : BigDecimal.ZERO;
     }
 
     public void setTempoNoEstadoAtual(final BigDecimal tempo) {
-        estados[this.numeroClientes] = tempo;
+        if (estados.size() > numeroClientes) {
+            estados.set(numeroClientes, tempo);
+            return;
+        }
+        estados.add(numeroClientes, tempo);
     }
 
     public boolean podeRemover() {
@@ -85,7 +120,27 @@ public class FilaSimples implements Fila {
         return this.numeroClientes;
     }
 
-    public BigDecimal[] getEstados() {
-        return estados;
+    @Override
+    public Generator getGenerator() {
+        return generator;
+    }
+
+    @Override
+    public void imprimeEstados(BigDecimal tempoFinal) {
+        System.out.println("Estados da Fila:");
+        for (int i = 0; i < estados.size(); i++) {
+            System.out.println("Prob[" + i + "] = " + estados.get(i).divide(tempoFinal, RoundingMode.FLOOR));
+        }
+    }
+
+    @Override
+    public BigDecimal handleEvento(Evento evento, BigDecimal globalTime, Escalonador escalonador) {
+        final BigDecimal tempoEvento = evento.getTempo();
+        if (evento.getTipoEvento().equals(CHEGADA)) {
+            this.handleChegada(tempoEvento, globalTime, escalonador);
+        } else {
+            this.handleSaida(tempoEvento, globalTime, escalonador);
+        }
+        return tempoEvento;
     }
 }
