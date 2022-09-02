@@ -13,13 +13,17 @@ public class FilaSimples implements Fila {
 
     private int numeroClientes;
     private int perda = 0;
-    private BigDecimal[] estados;
+    private final BigDecimal[] estados;
 
     public FilaSimples(Intervalo chegada, Intervalo saida, int servidores, int capacidade) {
         this.chegada = chegada;
         this.saida = saida;
         this.servidores = servidores;
         this.capacidade = capacidade;
+        this.estados = new BigDecimal[capacidade+1];
+        for (int i = 0; i < capacidade+1; i++) {
+            estados[i] = BigDecimal.ZERO;
+        }
     }
 
     public Intervalo getChegada() {
@@ -77,5 +81,9 @@ public class FilaSimples implements Fila {
 
     public int getNumeroClientes() {
         return this.numeroClientes;
+    }
+
+    public BigDecimal[] getEstados() {
+        return estados;
     }
 }

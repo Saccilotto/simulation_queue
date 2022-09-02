@@ -29,4 +29,8 @@ public class Escalonador {
     public Evento getEvento(int posicao) {
         return eventos.get(posicao);
     }
+
+    public void remove(int posicao) {
+        eventos.remove(posicao);
+    }
 }
