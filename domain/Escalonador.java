@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 public class Escalonador {
     private List<Evento> eventos;
 
-
     public Escalonador() {
         this.eventos = new LinkedList<>();
     }

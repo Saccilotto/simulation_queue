@@ -1,6 +1,8 @@
 import domain.Intervalo;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FilaSimples implements Fila {
 
@@ -10,16 +12,16 @@ public class FilaSimples implements Fila {
     private int capacidade;
     private int numeroClientes;
     private int perda = 0;
-    private final BigDecimal[] estados;
+    private final List<BigDecimal> estados;
 
     public FilaSimples(Intervalo chegada, Intervalo saida, int servidores, int capacidade) {
         this.chegada = chegada;
         this.saida = saida;
         this.servidores = servidores;
         this.capacidade = capacidade;
-        this.estados = new BigDecimal[capacidade+1];
-        for (int i = 0; i < capacidade+1; i++) {
-            estados[i] = BigDecimal.ZERO;
+        this.estados = new ArrayList<BigDecimal>(capacidade+1);
+        for(BigDecimal b:estados) {
+            b.add(BigDecimal.ZERO);
         }
     }
 
@@ -65,11 +67,11 @@ public class FilaSimples implements Fila {
     }
 
     public BigDecimal getTempoNoEstadoAtual() {
-        return estados[this.numeroClientes];
+        return estados.get(this.numeroClientes);
     }
 
-    public void setTempoNoEstadoAtual(final BigDecimal tempo) {
-        estados[this.numeroClientes] = tempo;
+    public void setTempoNoEstadoAtual(BigDecimal tempo) {
+        estados.set(this.numeroClientes, tempo);
     }
 
     public boolean podeRemover() {
@@ -80,7 +82,7 @@ public class FilaSimples implements Fila {
         return this.numeroClientes;
     }
 
-    public BigDecimal[] getEstados() {
+    public List<BigDecimal> getEstados() {
         return estados;
     }
 }

@@ -13,7 +13,6 @@ import static domain.TipoEvento.TRANSICAO;
 import static domain.TipoEvento.SAIDA;
 
 public class Simulation {
-    private final int MAX_NUMBERS = 100000;
     private BigDecimal globalTime = BigDecimal.ZERO;
     private int count = 0;
     private FilaTandem fila;
@@ -70,7 +69,7 @@ public class Simulation {
         }
 
         if( fila.getFilaTandem().get(aux)) {
-
+            
         }
         
 
@@ -90,7 +89,6 @@ public class Simulation {
         escalonador.addEvento(new Evento(CHEGADA, BigDecimal.valueOf(3)));
 
         while (count < 100000) {
-
             final Evento evento = escalonador.getEvento(0);
 
             if (evento.getTipoEvento().equals(CHEGADA)) {
@@ -99,15 +97,12 @@ public class Simulation {
                 saida(evento.getTempo());
             }
             escalonador.remove(0);
-            // TODO: remover evento após ser utilizado
-            // como acessa sempre o primeiro, pensar numa estrutura que mantem ordem (sort a cada add)
-            // e que permite iteração
         }
         System.out.println("Tempo final: " + globalTime);
         System.out.println("Perda: " + fila.getPerda());
         System.out.println("Estados da Fila:");
-        for (int i = 0; i < fila.getEstados().length; i++) {
-            System.out.println("Prob[" + i + "] = " + fila.getEstados()[i].divide(globalTime, RoundingMode.FLOOR));
+        for (int i = 0; i < fila.getEstados().size(); i++) {
+            System.out.println("Prob[" + i + "] = " + fila.getEstados().get(i).divide(globalTime, RoundingMode.FLOOR));
         }
     }
 
