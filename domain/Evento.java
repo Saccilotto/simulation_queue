@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 public class Evento {
     private TipoEvento tipoEvento;
     private BigDecimal tempo;
-    private int origem;
     private int destino;
  
     public Evento(TipoEvento tipoEvento, BigDecimal tempo) {
@@ -13,15 +12,10 @@ public class Evento {
         this.tempo = tempo;
     }
 
-    public Evento(TipoEvento tipoEvento, BigDecimal tempo, int origem, int destino) {
+    public Evento(TipoEvento tipoEvento, BigDecimal tempo, int destino) {
         this.tipoEvento = tipoEvento;
         this.tempo = tempo;
-        this.origem = origem;
         this.destino = destino;
-    }
-
-    public int getOrigem() {
-        return origem;
     }
 
     public int getDestino() {

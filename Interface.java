@@ -15,8 +15,7 @@ public class Interface {
         int aux1, aux2;
         int servidores, filaTam, repeat;
         List<FilaSimples> simple = new ArrayList<FilaSimples>(); 
-        int count = 0;
-        do {
+        do{
             System.out.println("Digite o intervalo inferior do tempo para a chegada de clientes na fila: ");
             aux1 = input.nextInt();
             System.out.println("Digite o intervalo superior do tempo para a chegada de clientes na fila: ");
@@ -42,12 +41,12 @@ public class Interface {
 
             if(repeat == 1) {
                 quit = true;
-            } else {
+            }else {
                 quit = false;
             }
-            count++;
-        } while(quit);
-
+        }while(quit);
+        input.close();
+        
         FilaTandem filaFinal = new FilaTandem(simple);
         Simulation sim = new Simulation(chegada, atendimento, filaFinal);
         sim.simulate();

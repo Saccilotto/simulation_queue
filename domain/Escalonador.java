@@ -14,7 +14,6 @@ public class Escalonador {
 
     public void addEvento(Evento evento) {
         eventos.add(evento);
-
         eventos = eventos.stream().sorted(Comparator.comparing(Evento::getTempo)).collect(Collectors.toList());
     }
 

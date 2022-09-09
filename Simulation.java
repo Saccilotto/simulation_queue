@@ -4,8 +4,6 @@ import domain.Intervalo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
 import static domain.TipoEvento.CHEGADA;
@@ -50,7 +48,7 @@ public class Simulation {
         if(!fila.getFilaTandem().get(0).isFull()) {
             fila.getFilaTandem().get(0).add();
             if (fila.getFilaTandem().get(0).getNumeroClientes() <= fila.getFilaTandem().get(0).getServidores()) {
-                escalonador.addEvento(new Evento(TRANSICAO, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim())), 0, 1));
+                escalonador.addEvento(new Evento(TRANSICAO, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim())), 1));
             }
         } else {
             fila.getFilaTandem().get(0).addPerda();
@@ -60,19 +58,27 @@ public class Simulation {
 
     public void transicao(BigDecimal tempoEvento, int origem) {
         final BigDecimal delta = tempoEvento.subtract(globalTime);
-        fila.getFilaTandem().get(origem++).setTempoNoEstadoAtual(fila.getFilaTandem().get(0).getTempoNoEstadoAtual().add(delta));
+        int next = origem++;
+        fila.getFilaTandem().get(origem).setTempoNoEstadoAtual(fila.getFilaTandem().get(0).getTempoNoEstadoAtual().add(delta));
         globalTime = tempoEvento;
         fila.getFilaTandem().get(origem).remove();
-        int aux = origem + 2;
+
         if(fila.getFilaTandem().get(origem).getNumeroClientes() >= fila.getFilaTandem().get(origem).getServidores()) {
-            escalonador.addEvento(new Evento(TRANSICAO, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim())), origem++, aux));
+            escalonador.addEvento(new Evento(TRANSICAO, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim())), next));
         }
 
-        if( fila.getFilaTandem().get(aux)) {
-            
+        if(fila.getFilaTandem().get(next).getNumeroClientes() < fila.getFilaTandem().get(next).getCapacidade()) {
+            fila.getFilaTandem().get(next).add();
+            if(fila.getFilaTandem().get(next).getNumeroClientes() <= fila.getFilaTandem().get(next).getServidores()) {
+                if(next == fila.getFilaTandem().size() - 1) {
+                    escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim()))));
+                }else {
+                    escalonador.addEvento(new Evento(TRANSICAO, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim())), next));
+                }
+            }else {
+                fila.getFilaTandem().get(next).addPerda();
+            }
         }
-        
-
     }
 
     public void saida(BigDecimal tempoEvento) {
@@ -80,20 +86,21 @@ public class Simulation {
         fila.getFilaTandem().get(fila.getFilaTandem().size()).setTempoNoEstadoAtual(fila.getFilaTandem().get(fila.getFilaTandem().size()).getTempoNoEstadoAtual().add(delta));
         globalTime = tempoEvento;
         fila.getFilaTandem().get(fila.getFilaTandem().size()).remove();
-        if (fila.getFilaTandem().get(fila.getFilaTandem().size()).podeRemover()) {
+        if(fila.getFilaTandem().get(fila.getFilaTandem().size()).podeRemover()) {
             escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim()))));
         }
     }
 
     public void simulate() {
         escalonador.addEvento(new Evento(CHEGADA, BigDecimal.valueOf(3)));
-
         while (count < 100000) {
             final Evento evento = escalonador.getEvento(0);
 
-            if (evento.getTipoEvento().equals(CHEGADA)) {
+            if(evento.getTipoEvento().equals(CHEGADA)) {
                 chegada(evento.getTempo());
-            } else {
+            }else if(evento.getTipoEvento().equals(TRANSICAO)) {
+                transicao(evento.getTempo(), evento.getDestino());
+            }else {
                 saida(evento.getTempo());
             }
             escalonador.remove(0);
@@ -101,9 +108,8 @@ public class Simulation {
         System.out.println("Tempo final: " + globalTime);
         System.out.println("Perda: " + fila.getPerda());
         System.out.println("Estados da Fila:");
-        for (int i = 0; i < fila.getEstados().size(); i++) {
+        for(int i = 0; i < fila.getEstados().size(); i++) {
             System.out.println("Prob[" + i + "] = " + fila.getEstados().get(i).divide(globalTime, RoundingMode.FLOOR));
         }
     }
-
 }

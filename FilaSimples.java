@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FilaSimples implements Fila {
-
     private Intervalo chegada;
     private Intervalo saida;
     private int servidores;
