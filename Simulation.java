@@ -9,43 +9,31 @@ import java.util.List;
 import java.util.Random;
 
 import static domain.TipoEvento.CHEGADA;
+import static domain.TipoEvento.TRANSICAO;
 import static domain.TipoEvento.SAIDA;
 
 public class Simulation {
     private final int MAX_NUMBERS = 100000;
     private BigDecimal globalTime = BigDecimal.ZERO;
     private int count = 0;
-    private int numServidores;
-    private FilaSimples fila;
-    private Intervalo lambda;
+    private FilaTandem fila;
+    private Intervalo chegada;
     private Intervalo atendimento;
-    private int filaTam;
-
     private Escalonador escalonador;
 
-    public Simulation(Intervalo lambda, Intervalo atendimento, int numServidores, int filaTam) {
-        this.lambda = lambda;
+    public Simulation(Intervalo chegada, Intervalo atendimento, FilaTandem fila) {
+        this.chegada = chegada;
         this.atendimento = atendimento;
-        this.filaTam = filaTam;
-        this.numServidores = numServidores;
-        fila = new FilaSimples(lambda, atendimento, numServidores, filaTam);
         this.escalonador = new Escalonador();
+        this.fila = fila;
     }
 
-    public Intervalo getLambda() {
-        return lambda;
+    public Intervalo getchegada() {
+        return chegada;
     }
 
     public Intervalo getAtendimento() {
         return atendimento;
-    }
-
-    public int getServidores() {
-        return numServidores;
-    }
-
-    public int getFilaTam() {
-        return filaTam;
     }
 
     public BigDecimal generateRandom(int min, int max) {
@@ -58,36 +46,45 @@ public class Simulation {
 
     public void chegada(BigDecimal tempoEvento) {
         final BigDecimal delta = tempoEvento.subtract(globalTime);
-        fila.setTempoNoEstadoAtual(fila.getTempoNoEstadoAtual().add(delta));
+        fila.getFilaTandem().get(0).setTempoNoEstadoAtual(fila.getFilaTandem().get(0).getTempoNoEstadoAtual().add(delta));
         globalTime = tempoEvento;
-        if (!fila.isFull()) {
-            fila.add();
-            if (fila.getNumeroClientes() <= fila.getServidores()) {
-                //saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
-                escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim()))));
+        if(!fila.getFilaTandem().get(0).isFull()) {
+            fila.getFilaTandem().get(0).add();
+            if (fila.getFilaTandem().get(0).getNumeroClientes() <= fila.getFilaTandem().get(0).getServidores()) {
+                escalonador.addEvento(new Evento(TRANSICAO, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim())), 0, 1));
             }
+        } else {
+            fila.getFilaTandem().get(0).addPerda();
         }
-        else {
-            fila.addPerda();
-        }
-        escalonador.addEvento(new Evento(CHEGADA, tempoEvento.add(generateRandom(lambda.getInicio(), lambda.getFim()))));
+        escalonador.addEvento(new Evento(CHEGADA, tempoEvento.add(generateRandom(chegada.getInicio(), chegada.getFim()))));
     }
 
-    private void registraEvento(Evento evento) {
-        System.out.println("Evento de " + evento.getTipoEvento() + " no tempo " + evento.getTempo());
+    public void transicao(BigDecimal tempoEvento, int origem) {
+        final BigDecimal delta = tempoEvento.subtract(globalTime);
+        fila.getFilaTandem().get(origem++).setTempoNoEstadoAtual(fila.getFilaTandem().get(0).getTempoNoEstadoAtual().add(delta));
+        globalTime = tempoEvento;
+        fila.getFilaTandem().get(origem).remove();
+        int aux = origem + 2;
+        if(fila.getFilaTandem().get(origem).getNumeroClientes() >= fila.getFilaTandem().get(origem).getServidores()) {
+            escalonador.addEvento(new Evento(TRANSICAO, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim())), origem++, aux));
+        }
+
+        if( fila.getFilaTandem().get(aux)) {
+
+        }
+        
+
     }
 
     public void saida(BigDecimal tempoEvento) {
         final BigDecimal delta = tempoEvento.subtract(globalTime);
-        fila.setTempoNoEstadoAtual(fila.getTempoNoEstadoAtual().add(delta));
+        fila.getFilaTandem().get(fila.getFilaTandem().size()).setTempoNoEstadoAtual(fila.getFilaTandem().get(fila.getFilaTandem().size()).getTempoNoEstadoAtual().add(delta));
         globalTime = tempoEvento;
-            fila.remove();
-            if (fila.podeRemover()) {
-                // saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
-                escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim()))));
-            }
+        fila.getFilaTandem().get(fila.getFilaTandem().size()).remove();
+        if (fila.getFilaTandem().get(fila.getFilaTandem().size()).podeRemover()) {
+            escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim()))));
+        }
     }
-
 
     public void simulate() {
         escalonador.addEvento(new Evento(CHEGADA, BigDecimal.valueOf(3)));

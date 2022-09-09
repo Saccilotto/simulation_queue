@@ -1,14 +1,11 @@
 package domain;
 
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.stream.Collectors;
 
 public class Escalonador {
-
     private List<Evento> eventos;
 
 

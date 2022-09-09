@@ -6,11 +6,8 @@ public class FilaSimples implements Fila {
 
     private Intervalo chegada;
     private Intervalo saida;
-
     private int servidores;
-
     private int capacidade;
-
     private int numeroClientes;
     private int perda = 0;
     private final BigDecimal[] estados;

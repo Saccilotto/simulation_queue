@@ -1,4 +1,7 @@
 import domain.Intervalo;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Interface {
@@ -8,16 +11,17 @@ public class Interface {
     public void run() {
         boolean quit = false;
         Scanner input = new Scanner(System.in);
-        Intervalo lambda, atendimento;
+        Intervalo chegada, atendimento;
         int aux1, aux2;
         int servidores, filaTam, repeat;
-
+        List<FilaSimples> simple = new ArrayList<FilaSimples>(); 
+        int count = 0;
         do {
             System.out.println("Digite o intervalo inferior do tempo para a chegada de clientes na fila: ");
             aux1 = input.nextInt();
             System.out.println("Digite o intervalo superior do tempo para a chegada de clientes na fila: ");
             aux2 = input.nextInt();
-            lambda = new Intervalo(aux1, aux2);
+            chegada = new Intervalo(aux1, aux2);
 
             System.out.println("Digite o intervalo inferior do tempo para o atendimento de um cliente na fila: ");
             aux1 = input.nextInt();
@@ -31,10 +35,9 @@ public class Interface {
             System.out.println("Digite a capacidade da fila: ");
             filaTam = input.nextInt();
 
-            Simulation sim = new Simulation(lambda, atendimento, servidores, filaTam);
-            sim.simulate();
+            simple.add(new FilaSimples(chegada, atendimento, servidores, filaTam));
 
-            System.out.println("Gostaria de simular outra fila(Digite 1 para sim ou qualquer outra tecla para fechar): ");
+            System.out.println("Gostaria de adicionar outra fila à simulação(Digite 1 para sim ou qualquer outra tecla para fechar): ");
             repeat = input.nextInt();
 
             if(repeat == 1) {
@@ -42,6 +45,11 @@ public class Interface {
             } else {
                 quit = false;
             }
+            count++;
         } while(quit);
+
+        FilaTandem filaFinal = new FilaTandem(simple);
+        Simulation sim = new Simulation(chegada, atendimento, filaFinal);
+        sim.simulate();
     }
 }   
