@@ -1,3 +1,5 @@
+package domain;
+
 import domain.Intervalo;
 
 import java.math.BigDecimal;

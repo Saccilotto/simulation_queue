@@ -1,4 +1,8 @@
+import domain.FilaSimples;
 import domain.Intervalo;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Interface {
@@ -11,6 +15,8 @@ public class Interface {
         Intervalo lambda, atendimento;
         int aux1, aux2;
         int servidores, filaTam, repeat;
+
+        List<FilaSimples> simpleQueueList = new ArrayList<>();
 
         do {
             System.out.println("Digite o intervalo inferior do tempo para a chegada de clientes na fila: ");
@@ -43,5 +49,10 @@ public class Interface {
                 quit = false;
             }
         } while(quit);
+    }
+
+    public void runTandem() {
+        // TODO: chamar menu em sequencia com base no numero de filas
+        // TODO: chamar simualacao com as filas em Tandem
     }
 }   

@@ -1,12 +1,11 @@
 import domain.Escalonador;
 import domain.Evento;
+import domain.FilaSimples;
 import domain.Intervalo;
+import domain.random.Generator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
 
 import static domain.TipoEvento.CHEGADA;
 import static domain.TipoEvento.SAIDA;
@@ -23,6 +22,8 @@ public class Simulation {
 
     private Escalonador escalonador;
 
+    private final Generator generator;
+
     public Simulation(Intervalo lambda, Intervalo atendimento, int numServidores, int filaTam) {
         this.lambda = lambda;
         this.atendimento = atendimento;
@@ -30,6 +31,7 @@ public class Simulation {
         this.numServidores = numServidores;
         fila = new FilaSimples(lambda, atendimento, numServidores, filaTam);
         this.escalonador = new Escalonador();
+        this.generator = new Generator();
     }
 
     public Intervalo getLambda() {
@@ -49,11 +51,13 @@ public class Simulation {
     }
 
     public BigDecimal generateRandom(int min, int max) {
-        Random rand = new Random(System.currentTimeMillis());
-        double n = rand.nextDouble() * (max - min) + min;
+        final BigDecimal random = generator.generateRandom()
+                .multiply(BigDecimal.valueOf(max + 1 - min))
+                .add(BigDecimal.valueOf(min));
+
 
         count++;
-        return BigDecimal.valueOf(n);
+        return BigDecimal.valueOf(random.doubleValue());
     }
 
     public void chegada(BigDecimal tempoEvento) {
@@ -66,8 +70,7 @@ public class Simulation {
                 //saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
                 escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim()))));
             }
-        }
-        else {
+        } else {
             fila.addPerda();
         }
         escalonador.addEvento(new Evento(CHEGADA, tempoEvento.add(generateRandom(lambda.getInicio(), lambda.getFim()))));
@@ -81,11 +84,11 @@ public class Simulation {
         final BigDecimal delta = tempoEvento.subtract(globalTime);
         fila.setTempoNoEstadoAtual(fila.getTempoNoEstadoAtual().add(delta));
         globalTime = tempoEvento;
-            fila.remove();
-            if (fila.podeRemover()) {
-                // saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
-                escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim()))));
-            }
+        fila.remove();
+        if (fila.podeRemover()) {
+            // saida(generateRandom(atendimento.getInicio(), atendimento.getFim()).divide(BigDecimal.valueOf(numServidores)));
+            escalonador.addEvento(new Evento(SAIDA, tempoEvento.add(generateRandom(atendimento.getInicio(), atendimento.getFim()))));
+        }
     }
 
 
